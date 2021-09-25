@@ -1,0 +1,126 @@
+--Creando la Base de Datos de practica de la materia
+--Rene Gerardo Magaña Magaña
+USE MASTER; --Hacer uso de la BD Master
+GO --Comando que indica el final de un lote de instrucciones transact - SQL
+
+CREATE DATABASE BD_Libreria_Carnet
+ON
+( NAME = BD_Libreria_Carnet_dat,
+	FILENAME = 'C:\Libreria\BD_Libreria_Carnetdat.mdf',
+	SIZE = 5,
+	MAXSIZE = 20,
+	FILEGROWTH = 5
+)
+LOG ON
+( NAME = BD_Libreria_Carnet_log,
+	FILENAME = 'C:\Libreria\BD_Libreria_Carnetlog.ldf',
+	SIZE = 2,
+	MAXSIZE = 10,
+	FILEGROWTH = 2
+);
+GO
+--Seleccionando la BD Libreria
+USE BD_Libreria_Carnet
+GO
+--Creacion de las tablas
+--Tabla Autor
+CREATE TABLE Autor(
+	CodigoAutor CHAR(5) NOT NULL,
+	PrimerNombre VARCHAR(25),
+	PrimerApellido VARCHAR(30),
+	FechaNacimiento DATE,
+	Nacionalidad VARCHAR(35),
+)
+GO
+--Creacion de la tabla libro
+CREATE TABLE Libro(
+	CodigoLibro CHAR(10) NOT NULL,
+	Titulo VARCHAR(MAX),
+	ISBN VARCHAR (20) NOT NULL,
+	AnoEdicion CHAR(4),
+	CodigoEditorial CHAR(5),
+)
+GO
+--Creacion de la tabla Editorial
+CREATE TABLE Editorial(
+	CodigoEditorial CHAR(5) NOT NULL,
+	Nombre VARCHAR(45),
+	Pais VARCHAR(50),
+)
+GO
+--Creacion de la tabla Detalle_Autor
+CREATE TABLE Detalle_AutorLibro(
+	CodigoAutor CHAR(5),
+	CodigoLibro CHAR(10),
+	Fecha DATE,
+)
+GO
+--Creacion de las restricciones
+--Crear las llaves primarias de la tabla Autor
+
+ALTER TABLE Autor
+ADD CONSTRAINT PK_CodigoAutor
+PRIMARY KEY (CodigoAutor)
+GO
+
+ALTER TABLE Libro
+ADD CONSTRAINT PK_CodigoLibro
+PRIMARY KEY (CodigoLibro)
+GO
+
+ALTER TABLE Editorial
+ADD CONSTRAINT PK_CodigoEditorial
+PRIMARY KEY (CodigoEditorial)
+GO
+
+--Creacion de las llaves Foraneas
+--Relacion entre Autor y Detalle_AutorLibro
+
+ALTER TABLE Detalle_AutorLibro
+ADD CONSTRAINT FK_CodigoAutor
+FOREIGN KEY (CodigoAutor)
+REFERENCES Autor(CodigoAutor)
+GO
+
+ALTER TABLE Detalle_AutorLibro
+ADD CONSTRAINT FK_CodigoLibro
+FOREIGN KEY (CodigoLibro)
+REFERENCES Libro(CodigoLibro)
+GO
+
+--Relacion entre Editorial y Libro
+
+ALTER TABLE Libro
+ADD CONSTRAINT FK_LibroEditorial
+FOREIGN KEY (CodigoEditorial)
+REFERENCES Editorial(CodigoEditorial)
+GO
+
+--Agregando campo calculado
+
+ALTER TABLE Autor
+ADD Edad AS DATEDIFF(YEAR, FechaNacimiento, GETDATE())
+
+--Restriccion Deafault
+
+ALTER TABLE Detalle_AutorLibro
+ADD CONSTRAINT DF_Fecha
+DEFAULT GETDATE() FOR Fecha;
+GO
+
+--Restriccion Check
+
+ALTER TABLE Libro
+ADD CONSTRAINT CK_anoedicion
+CHECK (AnoEdicion >= 2010 AND AnoEdicion < 2022);
+GO
+
+ALTER TABLE Autor
+ADD CONSTRAINT CK_nacionalidad
+CHECK (Nacionalidad in ('Salvadoreña','Española','Mexicano','Guatemalteco'));
+GO
+
+ALTER TABLE Libro
+ADD CONSTRAINT U_isbn
+UNIQUE (ISBN)
+GO
